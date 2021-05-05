@@ -5,8 +5,8 @@ https://developer.chrome.com/blog/timer-throttling-in-chrome-88/
 Tested on Windows Chrome Version 90.0.4430.93 (Official Build) (64-bit)
 - `index.html` - iframe out of visible area is not making it "hidden page" 
 - `dummy.js` - timer callbacks are slowed to 1000ms after 3 seconds of being hidden
--- `websocket.js` timer callbacks are slowed to 60 000ms after 5 minutes of being hidden, even when there is WebSocket on the page, but it doesn't participate in timer queue
--- `websocket2.js` timer callbacks are slowed only to **1 000ms** after **417 seconds** of being hidden, when WebSocket.message is also scheduling the next timer
+- `websocket.js` timer callbacks are slowed to 60 000ms after 5 minutes of being hidden, even when there is WebSocket on the page, but it doesn't participate in timer queue
+- `websocket2.js` timer callbacks are slowed only to **1 000ms** after **417 seconds** of being hidden, when WebSocket.message is also scheduling the next timer
 
 
 Part of output of `websocket2.js`
