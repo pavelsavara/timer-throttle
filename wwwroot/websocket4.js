@@ -1,7 +1,6 @@
 let start;
 var nextMessageId = 0;
 var lastHit;
-var lastFast;
 
 
 var tickUnique = 0
@@ -17,7 +16,6 @@ document.addEventListener("visibilitychange", () => {
         console.log('Start');
         start = new Date().valueOf();
         lastHit = start;
-        lastFast = start;
         nextMessageId++
         lastSocketId = nextMessageId;
         setTimeoutChain({ messageId: nextMessageId, chainCount: 0, isSocket: false, time: start });
@@ -36,7 +34,10 @@ function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
         let now = new Date().valueOf();
         tickUnique++
         let tickId = tickUnique
-        if (now > lastChainedAt && (!lastTickIsSocket || isSocket)) {
+        let betterCandidate = isSocket
+            ? now > lastChainedAt
+            : !lastTickIsSocket && now - 50 > lastChainedAt
+        if (betterCandidate) {
             // i'm your best candidate yet
             lastChainedAt = now
             lastTickId = tickId
@@ -57,17 +58,16 @@ function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
                 setTimeoutChain({ messageId: nextMessageId, chainCount: chainCount + 1, isSocket: false, time: now });
             }
             work(now, { messageId, chainCount, isSocket, time }, shouldChain)
-        }, 0);
+        }, 1);
     }, 100);
 }
 
 function work(now, { messageId, chainCount, isSocket, time }, shouldChain) {
     let sinceLast = now - lastHit;
     let sinceStart = now - start;
-    let sinceFast = now - lastFast;
     let sinceParent = now - time;
     if (document.hidden || shouldChain) {
-        console.log(`${messageId}, ${chainCount},${isSocket} at ${Math.round(sinceStart / 1000)}s from start, ${Math.round(sinceFast / 1000)}s from last fast, ${sinceLast}ms from last, ${sinceParent}ms from parent -> shouldChain: ${shouldChain}`);
+        console.log(`${messageId}, ${chainCount},${isSocket} at ${Math.round(sinceStart / 1000)}s from start, ${sinceLast}ms from last, ${sinceParent}ms from parent -> shouldChain: ${shouldChain}, ${now}`);
     }
     lastHit = now;
 }
