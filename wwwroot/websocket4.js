@@ -1,6 +1,7 @@
 let start;
 var nextMessageId = 0;
 var lastHit;
+var stopExperiment = false;
 
 
 var lastChainedAt = 0
@@ -19,6 +20,10 @@ document.addEventListener("visibilitychange", () => {
         lastSocketId = nextMessageId;
         setTimeoutChain({ messageId: nextMessageId, chainCount: 0, isSocket: false, time: start });
     }
+    if (!document.hidden && nextMessageId != 0) {
+        console.log('stopping')
+        stopExperiment = true;
+    }
 }, false);
 
 socket.addEventListener('message', function (event) {
@@ -29,7 +34,9 @@ socket.addEventListener('message', function (event) {
 });
 
 function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
+    if (stopExperiment) return;
     setTimeout(() => {
+        if (stopExperiment) return;
         let now = new Date().valueOf();
         nextMessageId++
         let candidateMessageId = nextMessageId
@@ -44,8 +51,9 @@ function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
         }
         // wait for all candidates to sort in this tick
         setTimeout(() => {
+            if (stopExperiment) return;
             let shouldChain = bestTickId == candidateMessageId // I win the selection
-            if (shouldChain) { 
+            if (shouldChain) {
                 lastChainedAt = now
 
                 socket.send(JSON.stringify({ messageId, chainCount, isSocket, time }))

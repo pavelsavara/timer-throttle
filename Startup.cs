@@ -79,10 +79,8 @@ namespace timer_throttle
             {
                 var ars = new ArraySegment<byte>(buffer, 0, result.Count);
                 Console.WriteLine(System.Text.Encoding.Default.GetString(ars));
-                await webSocket.SendAsync(ars, result.MessageType, result.EndOfMessage, CancellationToken.None);
-
                 await Task.Delay(3000);
-
+                await webSocket.SendAsync(ars, result.MessageType, result.EndOfMessage, CancellationToken.None);
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
