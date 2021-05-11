@@ -3,6 +3,7 @@ var nextMessageId = 0;
 var lastHit;
 var lastFast;
 var lastMessageIdChainedFrom = -1;
+var lastMessageChainedAt = 0
 let next = {}
 
 let socket = new WebSocket("ws://localhost:5000/ws");
@@ -29,11 +30,12 @@ socket.addEventListener('message', function (event) {
 function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
     setTimeout(() => {
         let now = new Date().valueOf();
-        let shouldChain = isSocket || messageId > lastMessageIdChainedFrom
+        let shouldChain = (isSocket || messageId > lastMessageIdChainedFrom) && lastMessageChainedAt+50 < now
         work(now, { messageId, chainCount, isSocket, time }, shouldChain)
         if (shouldChain) {
             socket.send(JSON.stringify({ messageId, chainCount, isSocket, time }))
             lastMessageIdChainedFrom = messageId
+            lastMessageChainedAt = now
             nextMessageId++
             setTimeoutChain({ messageId: nextMessageId, chainCount: chainCount + 1, isSocket: false, time: now });
         }
@@ -45,7 +47,7 @@ function work(now, { messageId, chainCount, isSocket, time }, shouldChain) {
     let sinceStart = now - start;
     let sinceFast = now - lastFast;
     let sinceParent = now - time;
-    if (document.hidden) {
+    if (document.hidden || shouldChain) {
         console.log(`${messageId}, ${chainCount},${isSocket} at ${Math.round(sinceStart / 1000)}s from start, ${Math.round(sinceFast / 1000)}s from last fast, ${sinceLast}ms from last, ${sinceParent}ms from parent -> shouldChain: ${shouldChain}`);
     }
     lastHit = now;
