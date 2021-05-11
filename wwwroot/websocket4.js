@@ -3,10 +3,9 @@ var nextMessageId = 0;
 var lastHit;
 
 
-var tickUnique = 0
 var lastChainedAt = 0
-var lastTickId = -1
-var lastTickIsSocket = false
+var bestTickId = -1
+var bestTickIsSocket = false
 let next = {}
 
 let socket = new WebSocket("ws://localhost:5000/ws");
@@ -32,29 +31,29 @@ socket.addEventListener('message', function (event) {
 function setTimeoutChain({ messageId, chainCount, isSocket, time }) {
     setTimeout(() => {
         let now = new Date().valueOf();
-        tickUnique++
-        let tickId = tickUnique
+        nextMessageId++
+        let candidateMessageId = nextMessageId
+
         let betterCandidate = isSocket
             ? now > lastChainedAt
-            : !lastTickIsSocket && now - 50 > lastChainedAt
+            : !bestTickIsSocket && now - 50 > lastChainedAt
         if (betterCandidate) {
-            // i'm your best candidate yet
-            lastChainedAt = now
-            lastTickId = tickId
-            lastTickIsSocket = isSocket
+            // i'm your best candidate so far in this tick
+            bestTickId = candidateMessageId
+            bestTickIsSocket = isSocket
         }
         // wait for all candidates to sort in this tick
         setTimeout(() => {
-            // console.log({lastChainedAt, now, lastTickId, tickId})
-            let shouldChain = lastChainedAt == now && lastTickId == tickId
-            if (shouldChain) { // I win the selection
+            let shouldChain = bestTickId == candidateMessageId // I win the selection
+            if (shouldChain) { 
+                lastChainedAt = now
+
                 socket.send(JSON.stringify({ messageId, chainCount, isSocket, time }))
 
                 //reset tick state
-                tickUnique = 0
-                lastTickIsSocket = false
+                bestTickIsSocket = false
+                bestTickId = 0
 
-                nextMessageId++
                 setTimeoutChain({ messageId: nextMessageId, chainCount: chainCount + 1, isSocket: false, time: now });
             }
             work(now, { messageId, chainCount, isSocket, time }, shouldChain)
