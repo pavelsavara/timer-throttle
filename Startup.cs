@@ -77,7 +77,9 @@ namespace timer_throttle
             WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             while (!result.CloseStatus.HasValue)
             {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                var ars = new ArraySegment<byte>(buffer, 0, result.Count);
+                Console.WriteLine(System.Text.Encoding.Default.GetString(ars));
+                await webSocket.SendAsync(ars, result.MessageType, result.EndOfMessage, CancellationToken.None);
 
                 result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             }

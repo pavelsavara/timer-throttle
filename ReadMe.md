@@ -7,6 +7,7 @@ Tested on Windows Chrome Version 90.0.4430.93 (Official Build) (64-bit)
 - `dummy.js` - timer callbacks are slowed to 1000ms after 3 seconds of being hidden
 - `websocket.js` timer callbacks are slowed to 60 000ms after 5 minutes of being hidden, even when there is WebSocket on the page, but it doesn't participate in timer queue
 - `websocket2.js` timer callbacks are slowed only to **1 000ms** after **417 seconds** of being hidden, when WebSocket.message is also scheduling the next timer
+- `websocket3.js` improved version of the test
 
 
 Part of output of `websocket2.js`
